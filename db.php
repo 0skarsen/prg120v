@@ -1,12 +1,14 @@
-<?php
-$DB_HOST = 'localhost';
-$DB_NAME = 'prg120';
-$DB_USER = 'root';
-$DB_PASS = 'root'; // MAMP bruker root/root som standard
-try {
-  $pdo = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME;charset=utf8", $DB_USER, $DB_PASS);
-  $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-  die("Databasefeil: " . $e->getMessage());
+<<?php
+$DB_HOST = 'dokploy-hostname';   // replace with your Dokploy host
+$DB_NAME = 'prg120';             // your database name
+$DB_USER = 'dokploy-username';   // your username
+$DB_PASS = 'dokploy-password';   // your password
+
+// Create connection
+$mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
+
+// Check connection
+if ($mysqli->connect_error) {
+    die("Connection failed: " . $mysqli->connect_error);
 }
 ?>

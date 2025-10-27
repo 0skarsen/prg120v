@@ -1,24 +1,30 @@
-<?php include 'db.php'; ?>
-<!DOCTYPE html><html lang="no"><head><meta charset="UTF-8"><title>Slett student</title></head><body>
-<h2>Slett student</h2>
-<form method="POST" onsubmit="return confirm('Er du sikker på at du vil slette denne studenten?');">
-  <label>Velg student:</label>
-  <select name="brukernavn" required>
-    <?php
-      foreach($pdo->query("SELECT brukernavn FROM student") as $rad) {
-        echo "<option value='{$rad['brukernavn']}'>{$rad['brukernavn']}</option>";
-      }
-    ?>
-  </select>
-  <button type="submit">Slett</button>
-</form>
 <?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $bruker = $_POST['brukernavn'];
-  $stmt = $pdo->prepare("DELETE FROM student WHERE brukernavn = ?");
-  $stmt->execute([$bruker]);
-  echo "<p>✅ Student $bruker slettet.</p>";
+include("db.php");
+
+$students = $mysqli->query("SELECT brukernavn, fornavn, etternavn FROM student");
+
+if(isset($_POST['submit'])){
+    $brukernavn = $_POST['brukernavn'];
+
+    $stmt = $mysqli->prepare("DELETE FROM student WHERE brukernavn=?");
+    $stmt->bind_param("s", $brukernavn);
+
+    if($stmt->execute()){
+        echo "Student slettet!";
+    } else {
+        echo "Feil: " . $stmt->error;
+    }
+
+    $stmt->close();
 }
 ?>
-<a href="index.php">Tilbake</a>
-</body></html>
+
+<form method="post" onsubmit="return confirm('Er du sikker?');">
+    Velg student:
+    <select name="brukernavn" required>
+        <?php while($row = $students->fetch_assoc()){ ?>
+            <option value="<?php echo $row['brukernavn']; ?>"><?php echo $row['brukernavn'] . " - " . $row['fornavn'] . " " . $row['etternavn']; ?></option>
+        <?php } ?>
+    </select>
+    <input type="submit" name="submit" value="Slett student">
+</form>

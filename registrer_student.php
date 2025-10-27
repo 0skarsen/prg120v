@@ -1,34 +1,37 @@
-<?php include 'db.php'; ?>
-<!DOCTYPE html><html lang="no"><head><meta charset="UTF-8"><title>Registrer student</title></head><body>
-<h2>Registrer student</h2>
-<form method="POST">
-  <label>Brukernavn:</label><input type="text" name="brukernavn" required>
-  <label>Fornavn:</label><input type="text" name="fornavn" required>
-  <label>Etternavn:</label><input type="text" name="etternavn" required>
-  <label>Klassekode:</label>
-  <select name="klassekode" required>
-    <?php
-      foreach($pdo->query("SELECT klassekode FROM klasse") as $row) {
-        echo "<option value='{$row['klassekode']}'>{$row['klassekode']}</option>";
-      }
-    ?>
-  </select>
-  <button type="submit">Registrer</button>
-</form>
 <?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $bruker = strtolower(trim($_POST['brukernavn']));
-  $fornavn = trim($_POST['fornavn']);
-  $etternavn = trim($_POST['etternavn']);
-  $klasse = $_POST['klassekode'];
-  try {
-    $stmt = $pdo->prepare("INSERT INTO student VALUES (?, ?, ?, ?)");
-    $stmt->execute([$bruker, $fornavn, $etternavn, $klasse]);
-    echo "<p>✅ Student $bruker registrert.</p>";
-  } catch (PDOException $e) {
-    echo "<p>❌ Feil: brukernavn finnes fra før.</p>";
-  }
+include("db.php");
+
+// Get all classes for dropdown
+$classes = $mysqli->query("SELECT klassekode, klassenavn FROM klasse");
+
+if(isset($_POST['submit'])){
+    $brukernavn = $_POST['brukernavn'];
+    $fornavn = $_POST['fornavn'];
+    $etternavn = $_POST['etternavn'];
+    $klassekode = $_POST['klassekode'];
+
+    $stmt = $mysqli->prepare("INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $brukernavn, $fornavn, $etternavn, $klassekode);
+
+    if($stmt->execute()){
+        echo "Student registrert!";
+    } else {
+        echo "Feil: " . $stmt->error;
+    }
+
+    $stmt->close();
 }
 ?>
-<a href="index.php">Tilbake</a>
-</body></html>
+
+<form method="post">
+    Brukernavn: <input type="text" name="brukernavn" required><br>
+    Fornavn: <input type="text" name="fornavn" required><br>
+    Etternavn: <input type="text" name="etternavn" required><br>
+    Klasse: 
+    <select name="klassekode" required>
+        <?php while($row = $classes->fetch_assoc()){ ?>
+            <option value="<?php echo $row['klassekode']; ?>"><?php echo $row['klassekode'] . " - " . $row['klassenavn']; ?></option>
+        <?php } ?>
+    </select><br>
+    <input type="submit" name="submit" value="Registrer student">
+</form>

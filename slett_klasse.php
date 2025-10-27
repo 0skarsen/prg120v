@@ -1,30 +1,37 @@
-<?php include 'db.php'; ?>
-<!DOCTYPE html><html lang="no"><head><meta charset="UTF-8"><title>Slett klasse</title></head><body>
-<h2>Slett klasse</h2>
-<form method="POST" onsubmit="return confirm('Er du sikker på at du vil slette denne klassen?');">
-  <label>Velg klasse:</label>
-  <select name="klassekode" required>
-    <?php
-      foreach($pdo->query("SELECT klassekode FROM klasse") as $rad) {
-        echo "<option value='{$rad['klassekode']}'>{$rad['klassekode']}</option>";
-      }
-    ?>
-  </select>
-  <button type="submit">Slett</button>
-</form>
 <?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $kode = $_POST['klassekode'];
-  $stmt = $pdo->prepare("SELECT COUNT(*) FROM student WHERE klassekode = ?");
-  $stmt->execute([$kode]);
-  if ($stmt->fetchColumn() > 0) {
-    echo "<p>❌ Kan ikke slette klassen – den har studenter.</p>";
-  } else {
-    $del = $pdo->prepare("DELETE FROM klasse WHERE klassekode = ?");
-    $del->execute([$kode]);
-    echo "<p>✅ Klasse $kode slettet.</p>";
-  }
+include("db.php");
+
+$classes = $mysqli->query("SELECT klassekode, klassenavn FROM klasse");
+
+if(isset($_POST['submit'])){
+    $klassekode = $_POST['klassekode'];
+
+    // Check if any students exist
+    $check = $mysqli->prepare("SELECT COUNT(*) as count FROM student WHERE klassekode=?");
+    $check->bind_param("s", $klassekode);
+    $check->execute();
+    $res = $check->get_result()->fetch_assoc();
+    if($res['count'] > 0){
+        echo "Kan ikke slette: det finnes studenter i denne klassen!";
+    } else {
+        $stmt = $mysqli->prepare("DELETE FROM klasse WHERE klassekode=?");
+        $stmt->bind_param("s", $klassekode);
+        if($stmt->execute()){
+            echo "Klasse slettet!";
+        } else {
+            echo "Feil: " . $stmt->error;
+        }
+        $stmt->close();
+    }
 }
 ?>
-<a href="index.php">Tilbake</a>
-</body></html>
+
+<form method="post" onsubmit="return confirm('Er du sikker?');">
+    Velg klasse:
+    <select name="klassekode" required>
+        <?php while($row = $classes->fetch_assoc()){ ?>
+            <option value="<?php echo $row['klassekode']; ?>"><?php echo $row['klassekode'] . " - " . $row['klassenavn']; ?></option>
+        <?php } ?>
+    </select>
+    <input type="submit" name="submit" value="Slett klasse">
+</form>

@@ -1,13 +1,26 @@
-<?php include 'db.php'; ?>
-<!DOCTYPE html><html lang="no"><head><meta charset="UTF-8"><title>Vis alle studenter</title></head><body>
-<h2>Alle studenter</h2>
-<table border="1" cellpadding="5">
-<tr><th>Brukernavn</th><th>Fornavn</th><th>Etternavn</th><th>Klassekode</th></tr>
 <?php
-foreach ($pdo->query("SELECT * FROM student") as $rad) {
-  echo "<tr><td>{$rad['brukernavn']}</td><td>{$rad['fornavn']}</td><td>{$rad['etternavn']}</td><td>{$rad['klassekode']}</td></tr>";
-}
+include("db.php");
+
+$result = $mysqli->query("SELECT s.brukernavn, s.fornavn, s.etternavn, k.klassenavn
+                          FROM student s
+                          JOIN klasse k ON s.klassekode = k.klassekode");
 ?>
+
+<h2>Alle studenter</h2>
+<table border="1">
+<tr>
+    <th>Brukernavn</th>
+    <th>Fornavn</th>
+    <th>Etternavn</th>
+    <th>Klasse</th>
+</tr>
+
+<?php while($row = $result->fetch_assoc()){ ?>
+<tr>
+    <td><?php echo $row['brukernavn']; ?></td>
+    <td><?php echo $row['fornavn']; ?></td>
+    <td><?php echo $row['etternavn']; ?></td>
+    <td><?php echo $row['klassenavn']; ?></td>
+</tr>
+<?php } ?>
 </table>
-<a href="index.php">Tilbake</a>
-</body></html>
