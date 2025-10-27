@@ -1,37 +1,37 @@
 <?php
-include("db.php");
+include('db.php');
 
 $classes = $mysqli->query("SELECT klassekode, klassenavn FROM klasse");
 
-if(isset($_POST['submit'])){
+if (isset($_POST['klassekode'])) {
     $klassekode = $_POST['klassekode'];
-
-    // Check if any students exist
-    $check = $mysqli->prepare("SELECT COUNT(*) as count FROM student WHERE klassekode=?");
+    
+    // Check if students exist
+    $check = $mysqli->prepare("SELECT COUNT(*) FROM student WHERE klassekode = ?");
     $check->bind_param("s", $klassekode);
     $check->execute();
-    $res = $check->get_result()->fetch_assoc();
-    if($res['count'] > 0){
-        echo "Kan ikke slette: det finnes studenter i denne klassen!";
+    $check->bind_result($count);
+    $check->fetch();
+    $check->close();
+
+    if ($count > 0) {
+        echo "Kan ikke slette klasse med studenter!";
     } else {
         $stmt = $mysqli->prepare("DELETE FROM klasse WHERE klassekode=?");
         $stmt->bind_param("s", $klassekode);
-        if($stmt->execute()){
-            echo "Klasse slettet!";
-        } else {
-            echo "Feil: " . $stmt->error;
-        }
+        $stmt->execute();
+        echo "Klasse slettet!";
         $stmt->close();
     }
 }
 ?>
 
-<form method="post" onsubmit="return confirm('Er du sikker?');">
-    Velg klasse:
-    <select name="klassekode" required>
-        <?php while($row = $classes->fetch_assoc()){ ?>
-            <option value="<?php echo $row['klassekode']; ?>"><?php echo $row['klassekode'] . " - " . $row['klassenavn']; ?></option>
-        <?php } ?>
+<form method="post" onsubmit="return confirm('Er du sikker på at du vil slette klassen?');">
+    Velg klasse: 
+    <select name="klassekode">
+        <?php while($row = $classes->fetch_assoc()): ?>
+            <option value="<?= $row['klassekode'] ?>"><?= $row['klassekode'] ?> - <?= $row['klassenavn'] ?></option>
+        <?php endwhile; ?>
     </select>
-    <input type="submit" name="submit" value="Slett klasse">
+    <input type="submit" value="Slett klasse">
 </form>
