@@ -1,15 +1,11 @@
 <?php
-$DB_HOST = 'osedv4399-prg120v.db.dokploy.usn.no';
-$DB_NAME = 'osedv4399';
-$DB_USER = 'osedv4399';
-$DB_PASS = '8855osedv4399';
+$host = "localhost";
+$db = "osedv4399";
+$user = "osedv4399";
+$pass = "855osedv4399";
 
-// Create connection
-$mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
-
-// Check connection
-if ($mysqli->connect_error) {
-    die("Database connection failed: " . $mysqli->connect_error);
+$conn = new mysqli($host, $user, $pass, $db);
+if ($conn->connect_error) {
+    die("Tilkobling feilet: " . $conn->connect_error);
 }
 ?>
- 
