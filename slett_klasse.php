@@ -1,37 +1,27 @@
 <?php
-include('db.php');
+include("db.php");
+print("<h3>Slett klasse</h3>");
 
-$classes = $mysqli->query("SELECT klassekode, klassenavn FROM klasse");
-
-if (isset($_POST['klassekode'])) {
-    $klassekode = $_POST['klassekode'];
-    
-    // Check if students exist
-    $check = $mysqli->prepare("SELECT COUNT(*) FROM student WHERE klassekode = ?");
-    $check->bind_param("s", $klassekode);
-    $check->execute();
-    $check->bind_result($count);
-    $check->fetch();
-    $check->close();
-
-    if ($count > 0) {
-        echo "Kan ikke slette klasse med studenter!";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $klassekode = $_POST["klassekode"];
+    $check = $conn->query("SELECT * FROM student WHERE klassekode='$klassekode'");
+    if ($check->num_rows > 0) {
+        echo "Kan ikke slette: Det finnes studenter i denne klassen.";
     } else {
-        $stmt = $mysqli->prepare("DELETE FROM klasse WHERE klassekode=?");
-        $stmt->bind_param("s", $klassekode);
-        $stmt->execute();
-        echo "Klasse slettet!";
-        $stmt->close();
+        $conn->query("DELETE FROM klasse WHERE klassekode='$klassekode'");
+        echo "Klasse slettet.";
     }
 }
+
+$result = $conn->query("SELECT klassekode FROM klasse");
 ?>
 
 <form method="post" onsubmit="return confirm('Er du sikker på at du vil slette klassen?');">
-    Velg klasse: 
+    Velg klasse:
     <select name="klassekode">
-        <?php while($row = $classes->fetch_assoc()): ?>
-            <option value="<?= $row['klassekode'] ?>"><?= $row['klassekode'] ?> - <?= $row['klassenavn'] ?></option>
-        <?php endwhile; ?>
+        <?php while ($row = $result->fetch_assoc()) {
+            echo "<option value='" . $row["klassekode"] . "'>" . $row["klassekode"] . "</option>";
+        } ?>
     </select>
-    <input type="submit" value="Slett klasse">
+    <input type="submit" value="Slett">
 </form>
