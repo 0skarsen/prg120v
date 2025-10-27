@@ -1,37 +1,11 @@
 <?php
-include('db.php');
+include("db.php");
+print("<h3>Vis alle klasser</h3>");
 
-// Get classes for dropdown
-$classes = $mysqli->query("SELECT klassekode, klassenavn FROM klasse");
-
-if (isset($_POST['brukernavn'], $_POST['fornavn'], $_POST['etternavn'], $_POST['klassekode'])) {
-    $brukernavn = $_POST['brukernavn'];
-    $fornavn = $_POST['fornavn'];
-    $etternavn = $_POST['etternavn'];
-    $klassekode = $_POST['klassekode'];
-
-    $stmt = $mysqli->prepare("INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $brukernavn, $fornavn, $etternavn, $klassekode);
-
-    if ($stmt->execute()) {
-        echo "Student registrert!";
-    } else {
-        echo "Feil: " . $stmt->error;
-    }
-
-    $stmt->close();
+$result = $conn->query("SELECT * FROM klasse");
+echo "<table border='1'><tr><th>Kode</th><th>Navn</th><th>Studium</th></tr>";
+while ($row = $result->fetch_assoc()) {
+    echo "<tr><td>{$row['klassekode']}</td><td>{$row['klassenavn']}</td><td>{$row['studiumkode']}</td></tr>";
 }
+echo "</table>";
 ?>
-
-<form method="post">
-    Brukernavn: <input type="text" name="brukernavn" required><br>
-    Fornavn: <input type="text" name="fornavn" required><br>
-    Etternavn: <input type="text" name="etternavn" required><br>
-    Klasse: 
-    <select name="klassekode" required>
-        <?php while($row = $classes->fetch_assoc()): ?>
-            <option value="<?= $row['klassekode'] ?>"><?= $row['klassekode'] ?> - <?= $row['klassenavn'] ?></option>
-        <?php endwhile; ?>
-    </select><br>
-    <input type="submit" value="Registrer student">
-</form>
